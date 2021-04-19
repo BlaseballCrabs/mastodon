@@ -296,7 +296,7 @@ class MediaAttachment < ApplicationRecord
     private
 
     def file_styles(attachment)
-      if attachment.instance.file_content_type == 'image/gif' || VIDEO_CONVERTIBLE_MIME_TYPES.include?(attachment.instance.file_content_type)
+      if VIDEO_CONVERTIBLE_MIME_TYPES.include?(attachment.instance.file_content_type)
         VIDEO_CONVERTED_STYLES
       elsif IMAGE_CONVERTIBLE_MIME_TYPES.include?(attachment.instance.file_content_type)
         IMAGE_CONVERTED_STYLES
@@ -310,9 +310,7 @@ class MediaAttachment < ApplicationRecord
     end
 
     def file_processors(instance)
-      if instance.file_content_type == 'image/gif'
-        [:gif_transcoder, :blurhash_transcoder]
-      elsif VIDEO_MIME_TYPES.include?(instance.file_content_type)
+      if VIDEO_MIME_TYPES.include?(instance.file_content_type)
         [:transcoder, :blurhash_transcoder, :type_corrector]
       elsif AUDIO_MIME_TYPES.include?(instance.file_content_type)
         [:image_extractor, :transcoder, :type_corrector]

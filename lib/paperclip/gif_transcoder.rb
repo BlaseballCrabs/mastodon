@@ -120,7 +120,7 @@ module Paperclip
     private
 
     def needs_convert?
-      GifReader.animated?(file.path)
+      false
     end
   end
 end
