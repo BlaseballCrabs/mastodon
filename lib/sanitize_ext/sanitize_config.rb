@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative '../misskey_flavored_markdown'
+
 class Sanitize
   module Config
     HTTP_PROTOCOLS = %w(
@@ -32,6 +34,7 @@ class Sanitize
         next true if /^(mention|hashtag)$/.match?(e) # semantic classes
         next true if /^(ellipsis|invisible)$/.match?(e) # link formatting classes
         next true if e == 'quote-inline'
+        next true if /^mfm(-[\w\d]+)?$/.match?(e) # misskey flavored markdown classes
       end
 
       node['class'] = class_list.join(' ')
@@ -140,6 +143,7 @@ class Sanitize
 
       transformers: [
         ALLOWED_CLASS_TRANSFORMER,
+        MisskeyFlavoredMarkdown::MFM_TRANSFORMER,
         IMG_TAG_TRANSFORMER,
         TRANSLATE_TRANSFORMER,
         MATH_TRANSFORMER,
