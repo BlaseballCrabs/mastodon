@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../misskey_flavored_markdown'
+require_relative '../mfm'
 
 class Sanitize
   module Config
@@ -143,7 +143,7 @@ class Sanitize
 
       transformers: [
         ALLOWED_CLASS_TRANSFORMER,
-        MisskeyFlavoredMarkdown::MFM_TRANSFORMER,
+        MFM::TRANSFORMER,
         IMG_TAG_TRANSFORMER,
         TRANSLATE_TRANSFORMER,
         MATH_TRANSFORMER,
