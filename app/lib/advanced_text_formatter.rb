@@ -1,25 +1,6 @@
 # frozen_string_literal: true
 
 class AdvancedTextFormatter < TextFormatter
-  class HTMLRenderer < Redcarpet::Render::HTML
-    def initialize(options, &block)
-      super(options)
-      @format_link = block
-    end
-
-    def block_code(code, _language)
-      <<~HTML
-        <pre><code>#{ERB::Util.h(code).gsub("\n", '<br/>')}</code></pre>
-      HTML
-    end
-
-    def autolink(link, link_type)
-      return link if link_type == :email
-
-      @format_link.call(link)
-    end
-  end
-
   attr_reader :content_type
 
   # @param [String] text
@@ -105,32 +86,6 @@ class AdvancedTextFormatter < TextFormatter
   end
 
   def markdown_formatter
-    extensions = {
-      autolink: true,
-      no_intra_emphasis: true,
-      fenced_code_blocks: true,
-      disable_indented_code_blocks: true,
-      strikethrough: true,
-      lax_spacing: true,
-      space_after_headers: true,
-      superscript: true,
-      underline: true,
-      highlight: true,
-      footnotes: false,
-    }
-
-    renderer = HTMLRenderer.new({
-      filter_html: false,
-      escape_html: false,
-      no_images: true,
-      no_styles: true,
-      safe_links_only: true,
-      hard_wrap: true,
-      link_attributes: { target: '_blank', rel: 'nofollow noopener' },
-    }) do |url|
-      link_to_url({ url: url })
-    end
-
-    Redcarpet::Markdown.new(renderer, extensions)
+    MastodonRustStuff::MarkdownRenderer.new({})
   end
 end

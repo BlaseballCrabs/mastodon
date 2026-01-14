@@ -35,6 +35,8 @@ class Sanitize
         next true if /^(ellipsis|invisible)$/.match?(e) # link formatting classes
         next true if e == 'quote-inline'
         next true if /^mfm(-[\w\d]+)?$/.match?(e) # misskey flavored markdown classes
+        next true if /^math$/.match?(e) # math
+        next true if /^language-/.match?(e) # code language class
       end
 
       node['class'] = class_list.join(' ')
@@ -122,6 +124,7 @@ class Sanitize
       attributes: {
         'a' => %w(href rel class title translate),
         'abbr' => %w(title),
+        'code' => %w(class data-startline),
         'span' => %w(class translate),
         'blockquote' => %w(cite),
         'ol' => %w(start reversed),

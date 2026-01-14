@@ -9,7 +9,10 @@ RUN /bin/bash --login -i -c "nvm install"
 # Install additional OS packages
 RUN apt-get update && \
     export DEBIAN_FRONTEND=noninteractive && \
-    apt-get -y install --no-install-recommends libicu-dev libidn11-dev ffmpeg imagemagick libvips42 libpam-dev
+    apt-get -y install --no-install-recommends libicu-dev libidn11-dev ffmpeg imagemagick libvips42 libpam-dev libclang-dev
+
+# lmao rust
+RUN /bin/bash --login -i -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 
 # Disable download prompt for Corepack
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0

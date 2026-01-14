@@ -1,4 +1,10 @@
 GIT
+  remote: https://git.catgirl.cloud/999eagle/mastodon-rust-stuff
+  revision: c2bae2c4f036aecce018ae0825df03c389de2953
+  specs:
+    mastodon_rust_stuff (0.1.0)
+
+GIT
   remote: https://github.com/mastodon/webpush.git
   revision: 9631ac63045cfabddacc69fc06e919b4c13eb913
   ref: 9631ac63045cfabddacc69fc06e919b4c13eb913
@@ -1004,6 +1010,7 @@ DEPENDENCIES
   lograge (~> 0.12)
   mail (~> 2.8)
   mario-redis-lock (~> 1.2)
+  mastodon_rust_stuff (~> 0.1.0)!
   memory_profiler
   mime-types (~> 3.7.0)
   mutex_m
