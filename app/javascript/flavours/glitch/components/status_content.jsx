@@ -119,12 +119,30 @@ class StatusContent extends PureComponent {
     }
   }
 
+  _renderUnixtime() {
+    const node = this.node;
+    if (!node) {
+      return;
+    }
+
+    const timespans = node.querySelectorAll('span.mfm-unixtime');
+    for (var i = 0; i < timespans.length; i++) {
+      let timespan = timespans[i];
+      if (timespan.dataset.unixtime !== undefined) {
+        let value = new Date(Number(timespan.dataset.unixtime) * 1000);
+        timespan.innerText = value.toString();
+      }
+    }
+  }
+
   componentDidMount () {
     this._updateStatusLinks();
+    this._renderUnixtime();
   }
 
   componentDidUpdate () {
     this._updateStatusLinks();
+    this._renderUnixtime();
   }
 
   handleMouseDown = (e) => {
