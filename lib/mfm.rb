@@ -6,6 +6,8 @@ module MFM
   ANCHOR_URL_ALLOWED_RE = %r{\Ahttps?://[a-z0-9\/\._~:?#\[\]@!$&()hn+%=-]+\z}i
   ALLOWED_MFM_ELEMENTS = %w(b center del i small span).freeze
 
+  MFM_BORDER_STYLES = %w(solid hidden dotted dashed double groove ridge inset outset).freeze
+
   TRANSFORMER = lambda do |env|
     node = env[:node]
 
@@ -139,6 +141,20 @@ module MFM
                 'f00'
               end
       node['style'] += "color: ##{color};"
+    when 'border'
+      color = if node['mfm-color']&.match?(/^[0-9a-f]{3,6}$/i)
+                "##{node['mfm-color']}"
+              else
+                'var(--rich-text-decorations-color)'
+              end
+      style = 'solid'
+      style = node['mfm-style'] if MFM_BORDER_STYLES.include?(node['mfm-style'])
+      width = valid_number(node['mfm-width']) || 1
+      radius = valid_number(node['mfm-radius']) || 0
+      node['style'] += "border: #{width}px #{style} #{color}; border-radius: #{radius}px;"
+      if node['mfm-noclip'].nil?
+        node['style'] += ' overflow: clip;'
+      end
     end
     # rubocop:disable Style/HashEachMethods
     node.keys.each do |attribute|
