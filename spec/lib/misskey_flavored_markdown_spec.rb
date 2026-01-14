@@ -386,4 +386,24 @@ RSpec.describe AdvancedTextFormatter do
       end
     end
   end
+
+  describe '#to_s with sanitization' do
+    subject { described_class.new(text, content_type: 'text/x.misskeymarkdown').to_s }
+
+    context 'when given mfm spin x' do
+      let(:text) { "$[spin.x text]" }
+
+      it 'does the thing' do
+        expect(subject).to include '<span class="mfm mfm-spin" mfm-tag="spin" mfm-x="">text</span>'
+      end
+    end
+
+    context 'when given mfm with parameters' do
+      let(:text) { "$[fade.loop=1,speed=3s text]" }
+
+      it 'does the thing' do
+        expect(subject).to include '<span class="mfm mfm-fade" mfm-tag="fade" mfm-loop="1" mfm-speed="3s">text</span>'
+      end
+    end
+  end
 end

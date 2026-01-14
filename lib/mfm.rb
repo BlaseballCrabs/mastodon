@@ -32,12 +32,12 @@ module MFM
       node['style'] += "clip-path: inset(#{top}% #{right}% #{bottom}% #{left}%);"
     when 'font'
       family = nil
-      family = 'serif' if node['mfm-serif'].present?
-      family = 'monospace' if node['mfm-monospace'].present?
-      family = 'cursive' if node['mfm-cursive'].present?
-      family = 'fantasy' if node['mfm-fantasy'].present?
-      family = 'emoji' if node['mfm-emoji'].present?
-      family = 'math' if node['mfm-math'].present?
+      family = 'serif' unless node['mfm-serif'].nil?
+      family = 'monospace' unless node['mfm-monospace'].nil?
+      family = 'cursive' unless node['mfm-cursive'].nil?
+      family = 'fantasy' unless node['mfm-fantasy'].nil?
+      family = 'emoji' unless node['mfm-emoji'].nil?
+      family = 'math' unless node['mfm-math'].nil?
       node['style'] += "font-family: #{family};" unless family.nil?
     when 'rotate'
       degrees = valid_number(node['mfm-deg']) || 90
@@ -97,7 +97,7 @@ module MFM
       loops = valid_number(node['mfm-loop']) || 'infinite'
       node['style'] += "animation: mfm-shake #{speed} #{delay} ease #{loops};"
     when 'fade'
-      direction = if node['mfm-out'].present?
+      direction = if !node['mfm-out'].nil?
                     'alternate-reverse'
                   else
                     'alternate'
@@ -107,16 +107,18 @@ module MFM
       loops = valid_number(node['mfm-loop']) || 'infinite'
       node['style'] += "animation: mfm-fade #{speed} #{delay} linear #{loops}; animation-direction: #{direction};"
     when 'spin'
-      direction = if node['mfm-left'].present?
+      direction = if !node['mfm-left'].nil?
                     'reverse'
+                  elsif !node['mfm-alternate'].nil?
+                    'alternate'
                   else
-                    'alternate' if node['mfm-alternate'].present?
                     'normal'
                   end
-      animation = if node['mfm-x'].present?
+      animation = if !node['mfm-x'].nil?
                     'mfm-spin-x'
+                  elsif !node['mfm-y'].nil?
+                    'mfm-spin-y'
                   else
-                    'mfm-spin-y' if node['mfm-y'].present?
                     'mfm-spin'
                   end
       speed = valid_time(node['mfm-speed']) || '1.5s'
