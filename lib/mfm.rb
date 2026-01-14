@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module MFM
-  ALLOWED_SPAN_ATTRIBUTES = %w(style class).freeze
+  ALLOWED_SPAN_ATTRIBUTES = %w(style class data-unixtime).freeze
   POST_TAGS = %w(Hashtag Mention).freeze
   ANCHOR_URL_ALLOWED_RE = %r{\Ahttps?://[a-z0-9\/\._~:?#\[\]@!$&()hn+%=-]+\z}i
   ALLOWED_MFM_ELEMENTS = %w(b center del i small span).freeze
@@ -154,6 +154,10 @@ module MFM
       node['style'] += "border: #{width}px #{style} #{color}; border-radius: #{radius}px;"
       if node['mfm-noclip'].nil?
         node['style'] += ' overflow: clip;'
+      end
+    when 'unixtime'
+      if !node['mfm-unixtime'].nil? && valid_number(node['mfm-unixtime'])
+        node['data-unixtime'] = node['mfm-unixtime']
       end
     end
     # rubocop:disable Style/HashEachMethods
