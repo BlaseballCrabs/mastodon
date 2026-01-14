@@ -1,4 +1,5 @@
 import React from 'react';
+import type { CSSProperties } from 'react';
 
 import htmlConfig from '../../../config/html-tags.json';
 
@@ -25,6 +26,22 @@ type AllowedTagsType = {
 
 const globalAttributes: Record<string, boolean | string> = htmlConfig.global;
 const defaultAllowedTags: AllowedTagsType = htmlConfig.tags;
+
+function camelCase(input: string) {
+  return input.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+}
+
+function parseInlineStyle(input: string): CSSProperties {
+  return input.split(';').reduce((obj, kv) => {
+    let [key, val] = kv.split(':');
+    key = key?.trim();
+    val = val?.trim();
+    if (key && val) {
+      obj[camelCase(key) as keyof CSSProperties] = val as any;
+    }
+    return obj;
+  }, {} as CSSProperties);
+}
 
 interface QueueItem {
   node: Node;
@@ -172,13 +189,19 @@ export function htmlStringToComponents<Arg extends Record<string, unknown>>(
             name = globalAttr;
           }
 
-          let value: string | boolean | number = attr.value;
+          let value: string | boolean | number | CSSProperties = attr.value;
 
           // Handle boolean attributes.
           if (value === 'true') {
             value = true;
           } else if (value === 'false') {
             value = false;
+          }
+          if (name === 'style' && typeof value === 'string') {
+            value = parseInlineStyle(value);
+          } else if (name === 'style') {
+            console.warn('expected inline style as string, got', value);
+            continue;
           }
 
           props[name] = value;

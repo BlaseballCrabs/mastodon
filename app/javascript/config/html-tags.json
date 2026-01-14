@@ -13,6 +13,7 @@
     },
     "span": {
       "attributes": {
+        "style": true,
         "translate": true
       }
     },
@@ -42,6 +43,8 @@
     "b": {},
     "strong": {},
     "u": {},
+    "small": {},
+    "center": {},
     "sub": {},
     "sup": {},
     "i": {},
