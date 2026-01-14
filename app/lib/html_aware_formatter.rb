@@ -20,7 +20,7 @@ class HtmlAwareFormatter
     if local?
       linkify
     else
-      reformat.html_safe # rubocop:disable Rails/OutputSafety
+      reformat
     end
   rescue ArgumentError
     ''.html_safe
@@ -31,14 +31,20 @@ class HtmlAwareFormatter
   def reformat
     return ''.html_safe if text.blank?
 
-    Sanitize.fragment(text, Sanitize::Config::MASTODON_STRICT)
+    if %w(text/markdown text/x.misskeymarkdown).include?(@options[:content_type])
+      html = AdvancedTextFormatter.new(text, options).to_s
+    else
+      html = text
+    end
+    Sanitize.fragment(html, Sanitize::Config::MASTODON_STRICT).html_safe
   end
 
   def linkify
     if %w(text/markdown text/x.misskeymarkdown text/html).include?(@options[:content_type])
-      AdvancedTextFormatter.new(text, options).to_s
+      html = AdvancedTextFormatter.new(text, options).to_s
     else
-      TextFormatter.new(text, options).to_s
+      html = TextFormatter.new(text, options).to_s
     end
+    Sanitize.fragment(html, Sanitize::Config::MASTODON_OUTGOING).html_safe
   end
 end

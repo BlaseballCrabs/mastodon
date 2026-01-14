@@ -744,6 +744,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_17_091936) do
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "account_id", null: false
     t.boolean "silent", default: false, null: false
+    t.string "name"
     t.index ["account_id", "status_id"], name: "index_mentions_on_account_id_and_status_id", unique: true
     t.index ["status_id"], name: "index_mentions_on_status_id"
   end

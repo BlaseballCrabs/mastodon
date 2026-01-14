@@ -48,8 +48,8 @@ class ActivityPub::Activity::Create < ActivityPub::Activity
     @quote                = nil
     @quote_uri            = nil
 
-    process_status_params
     process_tags
+    process_status_params
     process_quote
     process_audience
 
@@ -98,6 +98,7 @@ class ActivityPub::Activity::Create < ActivityPub::Activity
       url: @status_parser.url || @status_parser.uri,
       account: @account,
       text: @status_parser.processed_text,
+      content_type: @status_parser.content_type,
       language: @status_parser.language,
       spoiler_text: @status_parser.processed_spoiler_text,
       created_at: @status_parser.created_at,
@@ -241,7 +242,7 @@ class ActivityPub::Activity::Create < ActivityPub::Activity
 
     return if account.nil?
 
-    @mentions << Mention.new(account: account, silent: false)
+    @mentions << Mention.new(account: account, name: tag['name'], silent: false)
   rescue Mastodon::UnexpectedResponseError, *Mastodon::HTTP_CONNECTION_ERRORS
     @unresolved_mentions << tag['href']
   end

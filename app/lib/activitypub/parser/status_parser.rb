@@ -37,9 +37,13 @@ class ActivityPub::Parser::StatusParser
     url unless unsupported_uri_scheme?(url)
   end
 
+  def content_type
+    @object['source']['mediaType'] if @object['source'].present?
+  end
+
   def text
-    if @object['source'].present? && @object['source']['mediaType'] == 'text/x.misskeymarkdown'
-      AdvancedTextFormatter.new(@object['source']['content'], content_type: 'text/x.misskeymarkdown', tags: as_array(@object['tag'])).to_s
+    if %w(text/markdown text/x.misskeymarkdown).include?(content_type)
+      AdvancedTextFormatter.new(@object['source']['content'], content_type: content_type, tags: as_array(@object['tag'])).to_source_s
     elsif @object['content'].present?
       @object['content']
     elsif content_language_map?
