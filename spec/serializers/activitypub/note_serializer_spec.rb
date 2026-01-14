@@ -7,7 +7,7 @@ RSpec.describe ActivityPub::NoteSerializer do
 
   let!(:account) { Fabricate(:account) }
   let!(:other) { Fabricate(:account) }
-  let!(:parent) { Fabricate(:status, account: account, visibility: :public, language: 'zh-TW') }
+  let!(:parent) { Fabricate(:status, account: account, visibility: :public, language: 'zh-TW', content_type: 'text/markdown', text: '*a*') }
   let!(:reply_by_account_first) { Fabricate(:status, account: account, thread: parent, visibility: :public) }
   let!(:reply_by_account_next) { Fabricate(:status, account: account, thread: parent, visibility: :public) }
   let!(:reply_by_other_first) { Fabricate(:status, account: other, thread: parent, visibility: :public) }
@@ -19,11 +19,16 @@ RSpec.describe ActivityPub::NoteSerializer do
       '@context' => include('https://www.w3.org/ns/activitystreams'),
       'type' => 'Note',
       'attributedTo' => ActivityPub::TagManager.instance.uri_for(account),
+      'content' => '<p><em>a</em></p>',
       'contentMap' => include({
         'zh-TW' => a_kind_of(String),
       }),
       'replies' => replies_collection_values,
       'context' => ActivityPub::TagManager.instance.uri_for(parent.conversation),
+      'source' => {
+        'mediaType' => 'text/markdown',
+        'content' => '*a*',
+      },
     })
   end
 

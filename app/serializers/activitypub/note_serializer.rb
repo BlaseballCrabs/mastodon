@@ -14,6 +14,7 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
 
   attribute :content
   attribute :content_map, if: :language?
+  attribute :source
   attribute :updated, if: :edited?
 
   attribute :direct_message, if: :non_public?
@@ -68,6 +69,13 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
 
   def content_map
     { object.language => content }
+  end
+
+  def source
+    {
+      :mediaType => object.content_type,
+      :content => object.text,
+    }
   end
 
   def replies
