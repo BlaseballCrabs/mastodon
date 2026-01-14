@@ -171,7 +171,7 @@ module MFM
   module_function
 
   def valid_time(time)
-    return unless time&.match?(/^[0-9.]+s$/)
+    return unless time&.match?(/^-?[0-9.]+s$/)
 
     time
   end
