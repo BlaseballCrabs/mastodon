@@ -2,27 +2,19 @@
 
 module MFM
   ALLOWED_SPAN_ATTRIBUTES = %w(style class).freeze
+  POST_TAGS = %w(Hashtag Mention).freeze
+  ANCHOR_URL_ALLOWED_RE = %r{\Ahttps?://[a-z0-9\/\._~:?#\[\]@!$&()hn+%=-]+\z}i
+  ALLOWED_MFM_ELEMENTS = %w(b center del i small span).freeze
+
   TRANSFORMER = lambda do |env|
     node = env[:node]
 
-    if node.name == 'small' || (!node['mfm-tag'].nil? && node['mfm-tag'] == 'small')
-      node.name = 'span'
-      node['style'] = 'opacity: 0.7; font-size: smaller;'
+    if !node['mfm-tag'].nil? && node['mfm-tag'] == 'small'
+      node.name = 'small'
       # rubocop:disable Style/HashEachMethods
       node.keys.each do |attribute|
         # rubocop:enable Style/HashEachMethods
-        node.delete attribute unless attribute == 'style'
-      end
-      return { node_allowlist: [node] }
-    end
-
-    if node.name == 'center'
-      node.name = 'div'
-      node['style'] = 'text-align: center;'
-      # rubocop:disable Style/HashEachMethods
-      node.keys.each do |attribute|
-        # rubocop:enable Style/HashEachMethods
-        node.delete attribute unless attribute == 'style'
+        node.delete attribute
       end
       return { node_allowlist: [node] }
     end

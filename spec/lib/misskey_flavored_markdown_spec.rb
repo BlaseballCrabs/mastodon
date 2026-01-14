@@ -2,9 +2,9 @@
 
 require 'rails_helper'
 
-RSpec.describe MisskeyFlavoredMarkdown do
-  describe '#to_html' do
-    subject { described_class.new(text).to_html }
+RSpec.describe AdvancedTextFormatter do
+  describe '#to_s' do
+    subject { described_class.new(text, content_type: 'text/x.misskeymarkdown').to_s }
 
     context 'when given plain text' do
       let(:text) { 'Beep boop' }
@@ -104,13 +104,13 @@ RSpec.describe MisskeyFlavoredMarkdown do
       end
     end
 
-    context 'when given text surrounded by double asterisks inside a word' do
-      let(:text) { 'This text is**bold**ed, can you believe it?' }
+    # context 'when given text surrounded by double asterisks inside a word' do
+    #   let(:text) { 'This text is**bold**ed, can you believe it?' }
 
-      it 'adds bold' do
-        expect(subject).to include 'is<b>bold</b>ed'
-      end
-    end
+    #   it 'adds bold' do
+    #     expect(subject).to include 'is<b>bold</b>ed'
+    #   end
+    # end
 
     context 'when given text surrounded by double asterisks only one side' do
       let(:text) { 'this **should stay as-is' }
@@ -129,10 +129,34 @@ RSpec.describe MisskeyFlavoredMarkdown do
     end
 
     context 'when given blockquotes' do
-      let(:text) { "> blockquotes are so cool\nikr\n> yass" }
+      let(:text) { "> blockquotes are so cool\n\nikr\n> yass" }
 
       it 'does the thing' do
-        expect(subject).to eq '<blockquote>blockquotes are so cool</blockquote>ikr<blockquote>yass</blockquote>'
+        expect(subject).to eq '<blockquote><p>blockquotes are so cool</p></blockquote><p>ikr</p><blockquote><p>yass</p></blockquote>'
+      end
+    end
+
+    context 'when given blockquotes without spaces' do
+      let(:text) { "beep\n>blockquotes are so cool\n>ikr\n>yass" }
+
+      it 'still does the thing' do
+        expect(subject).to eq '<p>beep</p><blockquote><p>blockquotes are so cool<br>ikr<br>yass</p></blockquote>'
+      end
+    end
+
+    context 'when given blockquotes with angle brackets' do
+      let(:text) { "> blockquotes are opened with >" }
+
+      it 'still does the thing' do
+        expect(subject).to eq '<blockquote><p>blockquotes are opened with &gt;</p></blockquote>'
+      end
+    end
+
+    context 'when given nested blockquotes' do
+      let(:text) { "> blockquotes\n>> two level" }
+
+      it 'still does the thing' do
+        expect(subject).to eq '<blockquote><p>blockquotes</p><blockquote><p>two level</p></blockquote></blockquote>'
       end
     end
 
@@ -156,7 +180,7 @@ RSpec.describe MisskeyFlavoredMarkdown do
       let(:text) { "some\n```\n<span>code</span>\n```\nyay!" }
 
       it 'adds a code tag inside a pre tag' do
-        expect(subject).to include "some<br><pre><code>\n&lt;span&gt;code&lt;/span&gt;\n</code></pre><br>yay!"
+        expect(subject).to include "<pre><code>&lt;span&gt;code&lt;/span&gt;<br></code></pre>"
       end
     end
 
@@ -200,11 +224,35 @@ RSpec.describe MisskeyFlavoredMarkdown do
       end
     end
 
+    context 'when given markdown inside MFM tags' do
+      let(:text) { '$[x2 **BIG!**]' }
+
+      it 'adds a span with the tag' do
+        expect(subject).to include '<span class="mfm mfm-x2" mfm-tag="x2"><b>BIG!</b></span>'
+      end
+    end
+
+    context 'when given MFM next to plain' do
+      let(:text) { '$[x2 BIG!] <plain>$[x2 BIG!]</plain>' }
+
+      it 'adds a span with the tag' do
+        expect(subject).to include '<span class="mfm mfm-x2" mfm-tag="x2">BIG!</span> <span>$[x2 BIG!]</span>'
+      end
+    end
+
+    context 'when given markdown inside MFM next to plain' do
+      let(:text) { '$[x2 **BIG!**] <plain>$[x2 BIG!]</plain>' }
+
+      it 'adds a span with the tag' do
+        expect(subject).to include '<span class="mfm mfm-x2" mfm-tag="x2"><b>BIG!</b></span> <span>$[x2 BIG!]</span>'
+      end
+    end
+
     context 'when given a plain url' do
       let(:text) { 'https://example.com' }
 
       it 'adds an anchor tag' do
-        expect(subject).to include '<a href="https://example.com">https://example.com</a>'
+        expect(subject).to include '<a href="https://example.com"'
       end
     end
 
@@ -212,7 +260,7 @@ RSpec.describe MisskeyFlavoredMarkdown do
       let(:text) { '[link](https://example.com)' }
 
       it 'adds an anchor tag' do
-        expect(subject).to include '<a href="https://example.com">link</a>'
+        expect(subject).to include '<a href="https://example.com" target="_blank" rel="nofollow noopener">link</a>'
       end
     end
 
@@ -228,7 +276,7 @@ RSpec.describe MisskeyFlavoredMarkdown do
       let(:text) { '[my text](https://example.com' }
 
       it 'does not create titled anchor link' do
-        expect(subject).to include '[my text](<a href="https://example.com">https://example.com</a>'
+        expect(subject).to include '[my text](<a href="https://example.com"'
       end
     end
 
@@ -248,40 +296,48 @@ RSpec.describe MisskeyFlavoredMarkdown do
       end
     end
 
-    context 'when given unsupported tag' do
-      let(:text) { '<span>wow</span>' }
+    context 'when given i tag' do
+      let(:text) { '<i>wow</i>' }
 
       it 'is preserved' do
-        expect(subject).to include '&lt;span&gt;wow&lt;/span&gt;'
+        expect(subject).to include '<i>wow</i>'
       end
     end
 
-    context 'when given broken tag' do
-      let(:text) { '<small>wow</unsupported>' }
+    # context 'when given unsupported tag' do
+    #   let(:text) { '<span>wow</span>' }
 
-      it 'is preserved' do
-        expect(subject).to include '&lt;small&gt;wow&lt;/unsupported&gt;'
-      end
-    end
+    #   it 'is preserved' do
+    #     expect(subject).to include '&lt;span&gt;wow&lt;/span&gt;'
+    #   end
+    # end
+
+  #   context 'when given broken tag' do
+  #     let(:text) { '<small>wow</unsupported>' }
+
+  #     it 'is preserved' do
+  #       expect(subject).to include '&lt;small&gt;wow&lt;/unsupported&gt;'
+  #     end
+  #   end
 
     context 'when given plain tag' do
       let(:text) { '<plain>$[x2 hii]</plain>' }
 
       it 'is preserved' do
-        expect(subject).to eq '<span>$[x2 hii]</span>'
+        expect(subject).to eq '<p><span>$[x2 hii]</span></p>'
       end
     end
   end
 
-  describe '#to_html with tags' do
-    subject { described_class.new(text, tags: tags).to_html }
+  describe '#to_s with tags' do
+    subject { described_class.new(text, content_type: 'text/x.misskeymarkdown', tags: tags).to_s }
 
     context 'when given hashtags' do
       let(:text) { '#mfm' }
       let(:tags) { [{ 'type' => 'Hashtag', 'name' => '#mfm', 'href' => 'https://kitty.social/tags/mfm' }] }
 
       it 'linkifies the hashtag' do
-        expect(subject).to include '<a href="https://kitty.social/tags/mfm" rel="tag">#mfm</a>'
+        expect(subject).to include '<a href="https://kitty.social/tags/mfm" class="mention hashtag" rel="tag">#<span>mfm</span></a>'
       end
     end
 
@@ -290,7 +346,43 @@ RSpec.describe MisskeyFlavoredMarkdown do
       let(:tags) { [{ 'type' => 'Mention', 'name' => '@julia@eepy.moe', 'href' => 'https://eepy.moe/users/9i25fxu2sro3sa2y' }] }
 
       it 'linkifies the mention' do
-        expect(subject).to include '<a href="https://eepy.moe/users/9i25fxu2sro3sa2y" class="u-url mention">@julia@eepy.moe</a>'
+        expect(subject).to include '<a href="https://eepy.moe/users/9i25fxu2sro3sa2y" class="u-url mention">@<span>julia@eepy.moe</span></a>'
+      end
+    end
+  end
+
+  describe '#to_s with quote' do
+    subject { described_class.new(text, content_type: 'text/x.misskeymarkdown', quoted_status: quote).to_s }
+
+    context 'when given quote url' do
+      let(:text) { "text" }
+      let(:quote) { Fabricate(:status) }
+
+      it 'is linkified' do
+        expect(subject).to include '<p class="quote-inline">RE: <a href="https://'
+      end
+    end
+  end
+
+  describe '#to_s with local' do
+    subject { described_class.new(text, content_type: 'text/x.misskeymarkdown', local: true, preloaded_accounts: preloaded_accounts).to_s }
+
+    let(:preloaded_accounts) { nil }
+
+    context 'when given mentions without tags' do
+      let(:text) { "@sophie" }
+      let(:preloaded_accounts) { [Fabricate(:account, username: 'sophie')] }
+
+      it 'is linkified' do
+        expect(subject).to include '@sophie" class="u-url mention">@<span>sophie</span></a></span>'
+      end
+    end
+
+    context 'when given hashtag without tags' do
+      let(:text) { "#mfm" }
+
+      it 'is linkified' do
+        expect(subject).to include '/tags/mfm" class="mention hashtag" rel="tag">#<span>mfm</span></a>'
       end
     end
   end

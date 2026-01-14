@@ -111,4 +111,36 @@ module Extractor
 
     possible_entries
   end
+
+  def extract_mfm_tags_with_indices(text, tags:)
+    return [] if tags.nil?
+    possible_entries = []
+
+    tags.each do |tag|
+      hash = {
+        text: tag['name'],
+        url: tag['href'],
+        tag_type: tag['type'],
+      }
+      next unless MFM::POST_TAGS.include?(hash[:tag_type]) && tag['name'].present?
+
+      pattern = tag['name'].count('@') > 1 ? tag['name'] : /#{Regexp.escape(tag['name'])}(?:@[[:word:]]+([.-]+[[:word:]]+)*)?/
+      text.scan(pattern) do
+        match_data = $LAST_MATCH_INFO
+        start_position = match_data.char_begin(0)
+        end_position   = match_data.char_end(0)
+        hash[:text] = match_data.to_s
+        hash[:indices] = [start_position, end_position]
+        possible_entries << hash
+      end
+    end
+
+    if block_given?
+      possible_entries.each do |tag|
+        yield tag[:text], tag[:url], tag[:tag_type], tag[:indices].first, tag[:indices].last
+      end
+    end
+
+    possible_entries
+  end
 end

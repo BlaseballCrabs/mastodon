@@ -104,8 +104,10 @@ class TextFormatter
   end
 
   def link_to_hashtag(entity)
-    hashtag = entity[:hashtag]
-    url     = tag_url(hashtag)
+    hashtag = entity[:hashtag] || entity[:text]
+    url     = entity[:url] || tag_url(hashtag)
+
+    hashtag = hashtag.sub(/^#/, "");
 
     <<~HTML.squish
       <a href="#{h(url)}" class="mention hashtag" rel="tag">#<span>#{h(hashtag)}</span></a>
@@ -113,8 +115,12 @@ class TextFormatter
   end
 
   def link_to_mention(entity)
-    username, domain = entity[:screen_name].split('@')
-    domain           = nil if local_domain?(domain)
+    screen_name      = entity[:screen_name] || entity[:text]
+    screen_name      = screen_name.sub(/^@/, "")
+    username, domain = screen_name.split('@')
+    url              = entity[:url]
+    domain           = TagManager.instance.normalize_domain(Addressable::URI.parse(url).host) if domain.nil? && url.present?
+    domain           = nil if local_domain?(domain) || web_domain?(domain)
     account          = nil
 
     if preloaded_accounts?
@@ -134,10 +140,12 @@ class TextFormatter
       account = entity_cache.mention(username, domain)
     end
 
-    return "@#{h(entity[:screen_name])}" if account.nil?
+    account ||= ActivityPub::TagManager.instance.uri_to_resource(url, Account) if url.present?
+    url = account[:url] || ActivityPub::TagManager.instance.url_for(account) unless account.nil?
+    display_username = same_username_hits&.positive? || with_domains? ? account.pretty_acct : account.username unless account.nil?
+    display_username ||= screen_name
 
-    url = ActivityPub::TagManager.instance.url_for(account)
-    display_username = same_username_hits&.positive? || with_domains? ? account.pretty_acct : account.username
+    return "@#{h(display_username)}" if url.nil?
 
     <<~HTML.squish
       <span class="h-card" translate="no"><a href="#{h(url)}" class="u-url mention">@<span>#{h(display_username)}</span></a></span>
@@ -153,6 +161,7 @@ class TextFormatter
   end
 
   delegate :local_domain?, to: :tag_manager
+  delegate :web_domain?, to: :tag_manager
 
   def multiline?
     options[:multiline]

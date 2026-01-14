@@ -179,3 +179,54 @@ RSpec.describe ActivityPub::Parser::StatusParser do
     end
   end
 end
+
+RSpec.describe ActivityPub::Parser::StatusParser do
+  subject { described_class.new(json) }
+
+  let(:sender) { Fabricate(:account, followers_url: 'http://example.com/followers', domain: 'example.com', uri: 'https://example.com/actor') }
+  let(:follower) { Fabricate(:account, username: 'bob') }
+
+  let(:json) do
+    {
+      '@context': 'https://www.w3.org/ns/activitystreams',
+      id: [ActivityPub::TagManager.instance.uri_for(sender), '#foo'].join,
+      type: 'Create',
+      actor: ActivityPub::TagManager.instance.uri_for(sender),
+      object: object_json,
+    }.with_indifferent_access
+  end
+
+  let(:object_json) do
+    {
+      id: [ActivityPub::TagManager.instance.uri_for(sender), 'post1'].join('/'),
+      type: 'Note',
+      to: [
+        'https://www.w3.org/ns/activitystreams#Public',
+        ActivityPub::TagManager.instance.uri_for(follower),
+      ],
+      source: {
+        mediaType: 'text/x.misskeymarkdown',
+        content: '$[x2 BIG]'
+      },
+      content: 'a',
+      contentMap: {
+        EN: 'a',
+      },
+      published: 1.hour.ago.utc.iso8601,
+      updated: 1.hour.ago.utc.iso8601,
+      tag: {
+        type: 'Mention',
+        href: ActivityPub::TagManager.instance.uri_for(follower),
+      },
+    }
+  end
+
+  it 'correctly parses status' do
+    expect(subject).to have_attributes(
+      text: '<p><span class="mfm mfm-x2" style="display: inline-block;">BIG</span></p>',
+      uri: [ActivityPub::TagManager.instance.uri_for(sender), 'post1'].join('/'),
+      reply: false,
+      language: :en
+    )
+  end
+end

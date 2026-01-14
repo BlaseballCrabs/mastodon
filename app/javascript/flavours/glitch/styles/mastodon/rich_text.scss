@@ -120,6 +120,11 @@
     vertical-align: super;
   }
 
+  small {
+    opacity: 0.7;
+    font-size: smaller;
+  }
+
   ul,
   ol {
     padding-inline-start: 24px;

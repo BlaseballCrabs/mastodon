@@ -13,7 +13,7 @@ class HtmlAwareFormatter
   def initialize(text, local, options = {})
     @text    = text
     @local   = local
-    @options = options
+    @options = options.merge({local: local})
   end
 
   def to_s

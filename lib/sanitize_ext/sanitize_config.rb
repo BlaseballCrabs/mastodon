@@ -31,7 +31,7 @@ class Sanitize
 
       class_list.keep_if do |e|
         next true if /^(h|p|u|dt|e)-/.match?(e) # microformats classes
-        next true if /^(mention|hashtag)$/.match?(e) # semantic classes
+        next true if /^(mention|hashtag|quote-link)$/.match?(e) # semantic classes
         next true if /^(ellipsis|invisible)$/.match?(e) # link formatting classes
         next true if e == 'quote-inline'
         next true if /^mfm(-[\w\d]+)?$/.match?(e) # misskey flavored markdown classes
@@ -119,7 +119,7 @@ class Sanitize
     end
 
     MASTODON_STRICT = freeze_config(
-      elements: %w(p br span a abbr del s pre blockquote code b strong u sub sup i em h1 h2 h3 h4 h5 ul ol li ruby rt rp),
+      elements: %w(p br span a abbr center del s pre blockquote code b strong u sub sup small i em h1 h2 h3 h4 h5 ul ol li ruby rt rp),
 
       attributes: {
         'a' => %w(href rel class title translate),
@@ -209,6 +209,7 @@ class Sanitize
       add_attributes: {},
 
       transformers: [
+        MFM::TRANSFORMER,
         ALLOWED_CLASS_TRANSFORMER,
         IMG_TAG_TRANSFORMER,
         TRANSLATE_TRANSFORMER,
