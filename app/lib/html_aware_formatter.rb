@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class HtmlAwareFormatter
-  STATUS_MIME_TYPES = %w(text/plain text/markdown text/html).freeze
+  STATUS_MIME_TYPES = %w(text/plain text/markdown text/x.misskeymarkdown text/html).freeze
 
   attr_reader :text, :local, :options
 
@@ -35,7 +35,7 @@ class HtmlAwareFormatter
   end
 
   def linkify
-    if %w(text/markdown text/html).include?(@options[:content_type])
+    if %w(text/markdown text/x.misskeymarkdown text/html).include?(@options[:content_type])
       AdvancedTextFormatter.new(text, options).to_s
     else
       TextFormatter.new(text, options).to_s

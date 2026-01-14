@@ -19,6 +19,8 @@ const messages = defineMessages({
   plain_text_meta: { id: 'compose.content-type.plain_meta', defaultMessage: 'Write with no advanced formatting' },
   markdown_label: { id: 'compose.content-type.markdown', defaultMessage: 'Markdown' },
   markdown_meta: { id: 'compose.content-type.markdown_meta', defaultMessage: 'Format your posts using Markdown' },
+  mfm_label: { id: 'compose.content-type.mfm', defaultMessage: 'Misskey-flavored Markdown' },
+  mfm_meta: { id: 'compose.content-type.mfm_meta', defaultMessage: 'Format your posts using Misskey-flavored Markdown' },
   html_label: { id: 'compose.content-type.html', defaultMessage: 'HTML' },
   html_meta: { id: 'compose.content-type.html_meta', defaultMessage: 'Format your posts using HTML' },
 });
@@ -41,18 +43,21 @@ export const ContentTypeButton = () => {
   const options = [
     { icon: 'file-text', iconComponent: DescriptionIcon, value: 'text/plain', text: intl.formatMessage(messages.plain_text_label), meta: intl.formatMessage(messages.plain_text_meta) },
     { icon: 'arrow-circle-down', iconComponent: MarkdownIcon, value: 'text/markdown', text: intl.formatMessage(messages.markdown_label), meta: intl.formatMessage(messages.markdown_meta) },
+    { icon: 'arrow-circle-down', iconComponent: MarkdownIcon, value: 'text/x.misskeymarkdown', text: intl.formatMessage(messages.mfm_label), meta: intl.formatMessage(messages.mfm_meta) },
     { icon: 'code', iconComponent: CodeIcon,  value: 'text/html', text: intl.formatMessage(messages.html_label), meta: intl.formatMessage(messages.html_meta) },
   ];
 
   const icon = {
     'text/plain': 'file-text',
     'text/markdown': 'arrow-circle-down',
+    'text/x.misskeymarkdown': 'arrow-circle-down',
     'text/html': 'code',
   }[contentType];
 
   const iconComponent = {
     'text/plain': SmallDescriptionIcon,
     'text/markdown': SmallMarkdownIcon,
+    'text/x.misskeymarkdown': SmallMarkdownIcon,
     'text/html': SmallCodeIcon,
   }[contentType];
 
