@@ -19,26 +19,21 @@ module ThemeHelper
 
   def theme_style_tags(flavour_and_skin)
     flavour, theme = flavour_and_skin
-    if theme == 'system'
-      ''.html_safe.tap do |tags|
-        tags << vite_stylesheet_tag("skins/#{flavour}/mastodon-light", type: :virtual, media: 'not all and (prefers-color-scheme: dark)', crossorigin: 'anonymous')
-        tags << vite_stylesheet_tag("skins/#{flavour}/default", type: :virtual, media: '(prefers-color-scheme: dark)', crossorigin: 'anonymous')
-      end
-    else
-      vite_stylesheet_tag "skins/#{flavour}/#{theme}", type: :virtual, media: 'all', crossorigin: 'anonymous'
-    end
+
+    vite_stylesheet_tag "skins/#{flavour}/#{theme}", type: :virtual, media: 'all', crossorigin: 'anonymous'
   end
 
-  def theme_color_tags(flavour_and_skin)
-    _, theme = flavour_and_skin
-
-    if theme == 'system'
+  def theme_color_tags(color_scheme)
+    case color_scheme
+    when 'auto'
       ''.html_safe.tap do |tags|
         tags << tag.meta(name: 'theme-color', content: Themes::THEME_COLORS[:dark], media: '(prefers-color-scheme: dark)')
         tags << tag.meta(name: 'theme-color', content: Themes::THEME_COLORS[:light], media: '(prefers-color-scheme: light)')
       end
-    else
-      tag.meta name: 'theme-color', content: theme_color_for(theme)
+    when 'light'
+      tag.meta name: 'theme-color', content: Themes::THEME_COLORS[:light]
+    when 'dark'
+      tag.meta name: 'theme-color', content: Themes::THEME_COLORS[:dark]
     end
   end
 
@@ -51,6 +46,33 @@ module ThemeHelper
       media: :all,
       skip_pipeline: true
     )
+  end
+
+  def current_flavour
+    [current_user&.setting_flavour, Setting.flavour, 'glitch', 'vanilla'].find { |flavour| Themes.instance.flavours.include?(flavour) }
+  end
+
+  def current_skin
+    skins = Themes.instance.skins_for(current_flavour)
+    [current_user&.setting_skin, Setting.skin, 'default'].find { |skin| skins.include?(skin) }
+  end
+
+  def current_theme
+    # NOTE: this is slightly different from upstream, as it's a derived value used
+    # for the sole purpose of pointing to the appropriate stylesheet pack
+    [current_flavour, current_skin]
+  end
+
+  def color_scheme
+    current_user&.setting_color_scheme || 'auto'
+  end
+
+  def contrast
+    current_user&.setting_contrast || 'auto'
+  end
+
+  def page_color_scheme
+    content_for(:force_color_scheme).presence || color_scheme
   end
 
   private
@@ -67,9 +89,5 @@ module ThemeHelper
     Rails.cache.fetch(:setting_digest_custom_css) do
       Setting.custom_css&.then { |content| Digest::SHA256.hexdigest(content) }
     end
-  end
-
-  def theme_color_for(theme)
-    theme == 'mastodon-light' ? Themes::THEME_COLORS[:light] : Themes::THEME_COLORS[:dark]
   end
 end

@@ -7,10 +7,11 @@
 #  id         :bigint(8)        not null, primary key
 #  status_id  :bigint(8)        not null
 #  name       :string
+#  silent     :boolean          default(FALSE), not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  account_id :bigint(8)        not null
-#  silent     :boolean          default(FALSE), not null
+#  status_id  :bigint(8)        not null
 #
 
 class Mention < ApplicationRecord

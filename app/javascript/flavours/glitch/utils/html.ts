@@ -21,7 +21,7 @@ interface AllowedTag {
 }
 
 type AllowedTagsType = {
-  [Tag in keyof React.ReactHTML]?: AllowedTag;
+  [Tag in keyof React.JSX.IntrinsicElements]?: AllowedTag;
 };
 
 const globalAttributes: Record<string, boolean | string> = htmlConfig.global;
@@ -87,7 +87,7 @@ export function htmlStringToComponents<Arg extends Record<string, unknown>>(
   const wrapper = document.createElement('template');
   wrapper.innerHTML = htmlString;
 
-  const rootChildren: React.ReactNode[] = [];
+  const rootChildren: Awaited<React.ReactNode>[] = [];
   const queue: QueueItem[] = [
     { node: wrapper.content, parent: rootChildren, depth: 0 },
   ];

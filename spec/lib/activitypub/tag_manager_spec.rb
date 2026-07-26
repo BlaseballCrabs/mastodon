@@ -198,7 +198,7 @@ RSpec.describe ActivityPub::TagManager do
 
       it 'returns a string starting with web domain and with the expected path' do
         expect(subject.uri_for(collection))
-          .to eq("#{host_prefix}/ap/users/#{collection.account.id}/featured_collections/#{collection.id}")
+          .to eq("#{host_prefix}/ap/users/#{collection.account.id}/collections/#{collection.id}")
       end
     end
 
@@ -629,14 +629,6 @@ RSpec.describe ActivityPub::TagManager do
     end
   end
 
-  describe '#uri_to_local_id' do
-    let(:account) { Fabricate(:account, id_scheme: :username_ap_id) }
-
-    it 'returns the local ID' do
-      expect(subject.uri_to_local_id(subject.uri_for(account), :username)).to eq account.username
-    end
-  end
-
   describe '#uris_to_local_accounts' do
     it 'returns the expected local accounts' do
       account = Fabricate(:account)
@@ -678,6 +670,16 @@ RSpec.describe ActivityPub::TagManager do
     it 'returns the remote status by matching URI without fragment part' do
       status = Fabricate(:status, uri: 'https://example.com/123')
       expect(subject.uri_to_resource('https://example.com/123#456', Status)).to eq status
+    end
+
+    it 'returns the local featured collection' do
+      collection = Fabricate(:collection)
+      expect(subject.uri_to_resource(subject.uri_for(collection), Collection)).to eq collection
+    end
+
+    it 'returns the remote featured collection' do
+      collection = Fabricate(:remote_collection)
+      expect(subject.uri_to_resource(subject.uri_for(collection), Collection)).to eq collection
     end
   end
 end

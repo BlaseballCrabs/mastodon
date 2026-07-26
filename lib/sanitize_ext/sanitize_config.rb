@@ -99,7 +99,10 @@ class Sanitize
       is_annotation_with_encoding = lambda do |encoding, node|
         return false unless node.name == 'annotation'
 
-        node.attributes['encoding'].value == encoding
+        encoding_attr = node.attributes['encoding']
+        return false if encoding_attr.nil?
+
+        encoding_attr.value == encoding
       end
 
       annotation = semantics.children.find(&is_annotation_with_encoding.curry['application/x-tex'])
@@ -122,6 +125,7 @@ class Sanitize
       elements: %w(p br span a abbr center del s pre blockquote code b strong u sub sup small i em h1 h2 h3 h4 h5 ul ol li ruby rt rp),
 
       attributes: {
+        :all => %w(lang),
         'a' => %w(href rel class title translate),
         'abbr' => %w(title),
         'code' => %w(class data-startline),
